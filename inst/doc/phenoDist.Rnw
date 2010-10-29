@@ -1,0 +1,160 @@
+%\VignetteIndexEntry{Introduction to phenoDist}
+%\VignetteKeywords{high-throughput image-based screen, high-content screen, multi-parameter phenotypic distance}
+%\VignettePackage{phenoDist}
+
+\documentclass[10pt,a4paper]{article}
+\RequirePackage{amsfonts,amsmath,amstext,amssymb,amscd}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.2,0.0,0.4}
+
+\topmargin -1.5cm
+\oddsidemargin -0cm   % read Lamport p.163
+\evensidemargin -0cm  % same as oddsidemargin but for left-hand pages
+\textwidth 17cm
+\textheight 24.5cm
+
+\newcommand{\lib}[1]{{\mbox{\normalfont\textsf{#1}}}}
+\newcommand{\file}[1]{{\mbox{\normalfont\textsf{'#1'}}}}
+\newcommand{\R}{{\mbox{\normalfont\textsf{R}}}}
+\newcommand{\Rfunction}[1]{{\mbox{\normalfont\texttt{#1}}}}
+\newcommand{\Robject}[1]{{\mbox{\normalfont\texttt{#1}}}}
+\newcommand{\Rpackage}[1]{{\mbox{\normalfont\textsf{#1}}}}
+\newcommand{\Rclass}[1]{{\mbox{\normalfont\textit{#1}}}}
+\newcommand{\code}[1]{{\mbox{\normalfont\texttt{#1}}}}
+
+\newcommand{\email}[1]{\mbox{\href{mailto:#1}{\textcolor{darkblue}{\normalfont{#1}}}}}
+\newcommand{\web}[2]{\mbox{\href{#2}{\textcolor{darkblue}{\normalfont{#1}}}}}
+
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE}
+
+\begin{document}
+
+\title{Phenotypic distance measures for image-based high-throughput screening}
+\author{Xian Zhang, Gr\'{e}goire Pau, Wolfgang Huber, Michael Boutros\\\email{x.zhang@dkfz.de}}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+High-throughput image-based screening (also termed high-content screening) has become a popular method in systems biology, functional genomics and drug discovery. Data analysis of high-content screening can be divided into two steps: image quantification and phenotypic analysis. Previously we have developed two R packages, \Rpackage{EBImage} and \Rpackage{imageHTS} for image quantification. The current R package \Rpackage{phenoDist} is designed for measuring the phenotypic distance between treatments (e.g., RNAi, small molecular), in order to identify phenotypes and to group treatments into functional clusters. The package implements various methods to compute phenotypic distance including scaling, principle component analysis, factor analysis \cite{Young2008}, Kolmogorov-Smirnov statistics \cite{Perlman2004}, SVM (Support Vector Machine) supervised classification \cite{Fuchs2010}, SVM weight vector \cite{Loo2007}, and SVM classification accuracy \cite{ZhangInpreparation}. The package also provides functions for phenotype identification, treatment clustering and gene enrichment analysis. In this vignette, we will demonstrate how \Rpackage{phenoDist} can be used for phenotypic distance calculation, phenotype identification and phenotypic clustering in high-content screening data analysis.
+
+\section{Cell feature extraction with \Rpackage{imageHTS}}
+Before being analyzed with \Rpackage{phenoDist}, an image-based screen has to be setup as an \Rclass{imageHTS} object and analyzed with segmentation and cell feature extraction. A human kinome siRNA screen for HeLa cell morphology is used as an example. Detailed description of the screen can be found in \cite{PauInpreparation,Fuchs2010}. The screen has been previously analyzed; screen information and data can be accessed remotely through \Rpackage{imageHTS} at \url{http://www.ebi.ac.uk/~gpau/imageHTS/screens/kimorph}. We first initialize an \Rclass{imageHTS} object to store the screen information.
+
+<<init, results=hide, echo=FALSE>>=
+display <- function(...) {invisible()}
+@ 
+
+<<library, results=hide>>=
+library('imageHTS')
+@ 
+
+<<imageHTSSetup>>=
+localPath <- file.path(tempdir(), 'kimorph')
+serverURL <- 'http://www.ebi.ac.uk/~gpau/imageHTS/screens/kimorph'
+x <- parseImageConf('conf/imageconf.txt', localPath=localPath, serverURL=serverURL)
+x <- configure(x, 'conf/description.txt', 'conf/plateconf.txt', 'conf/screenlog.txt')
+x <- annotate(x, 'conf/annotation.txt')
+@
+
+The cell images are then processed with segmentation and feature extraction. The following code is not run in the vignette due to time constraints; we will later download the analysis results remotely.
+
+<<imageHTSAnalysis, eval=FALSE>>=
+unames <- setdiff(getUnames(x), getUnames(x, content='empty'))
+segmentWells(x, uname=uname, segmentationPar='conf/segmentationpar.txt')
+extractFeatures(x, uname, 'conf/featurepar.txt')
+@
+
+\section{Phenotypic distance calculation}
+Based on the cell feature data, one can design a phenotypic distance measure, to quantitatively indicate how similar two phenotypes (when treated by RNAi for example) are. The phenotypic distance measurement can subsequently be used to identify phenotypes based on the phenotypic distance between samples and negative controls, and perform clustering analysis based on the phenotypic distance between samples \cite{ZhangInpreparation}. Multiple methods to compute phenotypic distance are implemented in this package. Here we show two examples: one by PCA transformation and euclidean distance; the other by SVM classification accuracy.
+
+<<library, results=hide>>=
+library('phenoDist')
+@ 
+
+<<PDM, eval=FALSE>>=
+profiles <- summarizeWells(x, unames, 'conf/featurepar.txt')
+load(system.file('kimorph', 'selectedFtrs.rda', package='phenoDist'))
+pcaPDM <- PDMByWellAvg(profiles, selectedWellFtrs=selectedWellFtrs, transformMethod='PCA',
+distMethod='euclidean', nPCA=30)
+svmAccPDM <- PDMBySvmAccuracy(x, unames, selectedCellFtrs=selectedCellFtrs, cross=5, cost=1,
+gamma=2^-5, kernel='radial')
+@
+
+The above calculations are not run in the vignette due to time constraints, instead, we load a subset of the pre-calculated svmAccPDM for demonstration purposes.
+
+<<loadSvmAccPDM_Pl1>>=
+load(system.file('kimorph', 'svmAccPDM_Pl1.rda', package='phenoDist'))
+dim(svmAccPDM_Pl1)
+svmAccPDM_Pl1[1:5,1:5]
+@
+
+Rows and columns of the distance matrix are non-empty wells from the first plate of the three-plate library with two technical replicates. Each value is the phenotypic distance measurement between cell populations from the two corresponding wells, calculated by the SVM classification accuracy method. The distance matrix is not completely symmetric due to random sampling in the SVM cross validation process, but the fluctuation is negligible \cite{ZhangInpreparation}.
+
+With the phenotypic distance matrix, we can assess the reproducibility of the two technical replicates of the screen by comparing the distance between replicates and distance between non-replicates.
+
+<<repDistRank>>=
+ranking <- repDistRank(x, distMatrix=svmAccPDM_Pl1)
+summary(ranking)
+@
+
+Lower ranking suggests better reproducibility. When ranking equals 1, the treatment is most similar to its technical replicates. 
+
+\section{Phenotype identification}
+Phenotypic distance between a treatment and the negative control indicates how strong the phenotype is. With the phenotype information, we can assess screen quality by calculating replicate correlation and separation between positive and negative controls.
+
+<<distToNeg>>=
+pheno <- distToNeg(x, distMatrix=svmAccPDM_Pl1, neg='rluc')
+df <- data.frame(pheno=pheno,gene=getWellFeatures(x, uname=rownames(svmAccPDM_Pl1),
+feature='GeneID'))
+df <- df[order(pheno, decreasing=T),]
+head(df)
+@
+
+Shown are the five siRNA treatments with the most significant phenotypes (i.e., highest phenotypic distance to the negative control). With \Rpackage{imageHTS}, one can view the cell images for certain siRNA treatments.
+
+
+Replicate reproducibility can also be assessed by calculating correlation coefficient between replicates, and by calculating Z'-factor, which indicates the separation between positive and negative controls \cite{Zhang1999}.
+
+<<repCorr>>=
+repCorr(x, pheno)
+@
+
+<<ctlSeparation>>=
+ctlSeparatn(x, pheno, neg='rluc', pos='ubc', method='robust')
+@
+
+These two quality control metrics can be used to assess screen quality, or to evaluate different data analysis methods.
+
+\section{Phenotypic clustering analysis}
+Treatments can be clustered based on the phenotypic distance matrix, which will help us understand their functional relationship. Here we clusters the genes with hierarchical clustering.
+
+<<clustering>>=
+phenoCluster <- clusterDist(x, distMatrix=svmAccPDM_Pl1, clusterFun='hclust', method='ward')
+@
+
+The clustering can be analyzed for GO term enrichment to identify significant gene clusters with the R package \Rpackage GOstats \cite{Falcon2007}. The following code is not run in the vignette due to time constraints.
+
+<<enrichment, eval=FALSE>>=
+library('GOstats')
+GOEnrich <- enrichAnalysis(x, cl=cutree(phenoCluster, k=5), terms='GO', annotation='org.Hs.eg.db',
+pvalueCutoff=0.01, testDirection='over', ontology='BP', conditional=TRUE)
+@
+
+\section{Session info}
+
+This document was produced using:
+
+<<sessionInfo, results=tex, print=TRUE>>=
+toLatex(sessionInfo())
+@ 
+
+\bibliography{phenoDist}
+\bibliographystyle{plain}
+
+\end{document}
+

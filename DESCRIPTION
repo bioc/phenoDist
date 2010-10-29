@@ -1,0 +1,12 @@
+Package: phenoDist
+Version: 0.99.1
+Title: Phenotypic distance measures
+Author: Xian Zhang, Gregoire Pau, Wolfgang Huber, Michael Boutros
+Maintainer: Xian Zhang <x.zhang@dkfz.de>
+Depends: R (>= 2.9.0), imageHTS, e1071
+Suggests: GOstats, MASS
+Description: PhenoDist is designed for measuring phenotypic distance in image-based high-throughput screening, in order to identify strong phenotypes and to group treatments into functional clusters. 
+Reference:
+biocViews:CellBasedAssays, Bioinformatics
+License: LGPL-2.1
+URL: http://www.dkfz.de/signaling, http://www.embl.de/research/units/genome_biology/huber/

@@ -1,0 +1,5 @@
+0.99.1
+- add e1071 to package dependency
+
+0.99.0
+- submission to Bioconductor
