@@ -1,0 +1,13 @@
+citHeader("To cite phenoDist in publications use:")
+
+citEntry(entry="Article",
+  author = "X Zhang and M Boutros",
+  title = "A novel phenotypic dissimilarity method for image-based high-throughput screens.",
+  journal = "BMC Bioinformatics",
+  year = "2013",
+  volume = "14",
+  pages = "336",
+  textVersion = paste("X Zhang and M Boutros.",
+      "A novel phenotypic dissimilarity method for image-based high-throughput screens.",
+      "BMC Bioinformatics 2013, 14:336.")
+)
