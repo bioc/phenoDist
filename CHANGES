@@ -1,6 +1,10 @@
+1.11.0
+- remove unsupportedplatforms in .BBSoptions
+
 1.10.0
 - update email contact
 - update citation
+- remove unsupportedplatforms in .BBSoptions
 
 0.99.1
 - add e1071 to package dependency
