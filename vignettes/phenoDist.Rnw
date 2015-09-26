@@ -33,7 +33,7 @@
 \begin{document}
 
 \title{Phenotypic distance measures for image-based high-throughput screening}
-\author{Xian Zhang, Gr\'{e}goire Pau, Wolfgang Huber, Michael Boutros\\\email{x.zhang@dkfz.de}}
+\author{Xian Zhang, Gr\'{e}goire Pau, Wolfgang Huber, Michael Boutros\\\email{xianzhang@gmail.com}}
 \maketitle
 
 \tableofcontents
@@ -43,7 +43,7 @@
 High-throughput image-based screening (also termed high-content screening) has become a popular method in systems biology, functional genomics and drug discovery. Data analysis of high-content screening can be divided into two steps: image quantification and phenotypic analysis. Previously we have developed two R packages, \Rpackage{EBImage} and \Rpackage{imageHTS} for image quantification. The current R package \Rpackage{phenoDist} is designed for measuring the phenotypic distance between treatments (e.g., RNAi, small molecular), in order to identify phenotypes and to group treatments into functional clusters. The package implements various methods to compute phenotypic distance including scaling, principle component analysis, factor analysis \cite{Young2008}, Kolmogorov-Smirnov statistics \cite{Perlman2004}, SVM (Support Vector Machine) supervised classification \cite{Fuchs2010}, SVM weight vector \cite{Loo2007}, and SVM classification accuracy \cite{ZhangInpreparation}. The package also provides functions for phenotype identification, treatment clustering and gene enrichment analysis. In this vignette, we will demonstrate how \Rpackage{phenoDist} can be used for phenotypic distance calculation, phenotype identification and phenotypic clustering in high-content screening data analysis.
 
 \section{Cell feature extraction with \Rpackage{imageHTS}}
-Before being analyzed with \Rpackage{phenoDist}, an image-based screen has to be setup as an \Rclass{imageHTS} object and analyzed with segmentation and cell feature extraction. A human kinome siRNA screen for HeLa cell morphology is used as an example. Detailed description of the screen can be found in \cite{PauInpreparation,Fuchs2010}. The screen has been previously analyzed; screen information and data can be accessed remotely through \Rpackage{imageHTS} at \url{http://www.ebi.ac.uk/~gpau/imageHTS/screens/kimorph}. We first initialize an \Rclass{imageHTS} object to store the screen information.
+Before being analyzed with \Rpackage{phenoDist}, an image-based screen has to be setup as an \Rclass{imageHTS} object and analyzed with segmentation and cell feature extraction. A human kinome siRNA screen for HeLa cell morphology is used as an example. Detailed description of the screen can be found in \cite{PauInpreparation,Fuchs2010}. The screen has been previously analyzed; screen information and data can be accessed remotely through \Rpackage{imageHTS} at \url{http://www.ebi.ac.uk/huber-srv/cellmorph/kimorph/}. We first initialize an \Rclass{imageHTS} object to store the screen information.
 
 <<init, results=hide, echo=FALSE>>=
 display <- function(...) {invisible()}
@@ -55,7 +55,7 @@ library('imageHTS')
 
 <<imageHTSSetup>>=
 localPath <- file.path(tempdir(), 'kimorph')
-serverURL <- 'http://www.ebi.ac.uk/~gpau/imageHTS/screens/kimorph'
+serverURL <- 'http://www.ebi.ac.uk/huber-srv/cellmorph/kimorph/'
 x <- parseImageConf('conf/imageconf.txt', localPath=localPath, serverURL=serverURL)
 x <- configure(x, 'conf/description.txt', 'conf/plateconf.txt', 'conf/screenlog.txt')
 x <- annotate(x, 'conf/annotation.txt')

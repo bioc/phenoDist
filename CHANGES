@@ -1,3 +1,6 @@
+1.18.0
+- change online location of kimorph screen from "http://www.ebi.ac.uk/˜gpau/imageHTS/screens/kimorph/" to "http://www.ebi.ac.uk/huber-srv/cellmorph/kimorph/"
+
 1.11.0
 - remove unsupportedplatforms in .BBSoptions
 
