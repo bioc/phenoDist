@@ -1,5 +1,5 @@
 Package: phenoDist
-Version: 1.27.0
+Version: 1.27.1
 Title: Phenotypic distance measures
 Author: Xian Zhang, Gregoire Pau, Wolfgang Huber, Michael Boutros
 Maintainer: Xian Zhang <xianzhang@gmail.com>
@@ -14,3 +14,4 @@ License: LGPL-2.1
 URL: http://www.dkfz.de/signaling,
         http://www.embl.de/research/units/genome_biology/huber/
 biocViews: CellBasedAssays
+PackageStatus: Deprecated
